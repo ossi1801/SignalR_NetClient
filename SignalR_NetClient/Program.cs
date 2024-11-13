@@ -1,4 +1,10 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using System.Net;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 namespace SignalR_NetClient;
 
 class Program
@@ -7,7 +13,7 @@ class Program
     {
         bool connected = false;
         Console.WriteLine("Starting SignalR Client");
-        string sHubUrl = "https://127.0.0.1:7088/chathub";
+        string sHubUrl = "https://127.0.0.1:7088/wr";
         HubConnection connection= new HubConnectionBuilder()
             //.WithUrl(new Uri("https://127.0.0.1:7088/chathub"))
             .WithUrl(sHubUrl, options => {
@@ -32,10 +38,15 @@ class Program
             await Task.Delay(new Random().Next(0,5) * 1000);
             await connection.StartAsync();
         };
-        //Recieving the "BroadCast" message
+        //Receiving the "BroadCast" message
         connection.On<string, string>("ReceiveMessage", (user, message) =>
         {
             Console.WriteLine($"{user} : {message}");
+        });
+        //Receiving the "Writer" message
+        connection.On<string, string>("SendMessageToWriter", (id, message) =>
+        {
+            Console.WriteLine($"{id} : {message}");
         });
         //Reconnecting fucntion
         connection.Reconnecting += error =>
